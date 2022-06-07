@@ -1,4 +1,9 @@
+import 'package:appli_meteo/bdd/database.dart';
+import 'package:appli_meteo/models/meteo.dart';
+import 'package:appli_meteo/services/meteo_service.dart';
+import 'package:appli_meteo/views/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,27 +19,42 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const SplashScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    initialization();
+  }
+
+  void initialization() async {
+    SqliteDB database = SqliteDB();
+    await database.initDb();
+    await database.fetchCities();
+    Meteo cityWeather = await getCityWeather("Lyon");
+    await Future.delayed(const Duration(seconds: 5));
+    setState(() {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => HomePage(cityWeather: cityWeather)));
+    });
+    FlutterNativeSplash.remove();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: const Center(),
-    );
+    return const Scaffold();
   }
 }
