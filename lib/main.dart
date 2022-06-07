@@ -1,7 +1,10 @@
+import 'package:appli_meteo/services/meteo_service.dart';
 import 'package:appli_meteo/utils/variables.dart';
 import 'package:appli_meteo/views/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+
+import 'models/meteo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,10 +41,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void initialization() async {
     await database.initDb();
-    await database.fetchCities();
     Meteo cityWeather = await getCityWeather("Lyon");
     List<Meteo> city5DaysWeather = await getCity5DaysWeather("Lyon");
-    await Future.delayed(const Duration(seconds: 5));
     setState(() {
       Navigator.push(
           context,

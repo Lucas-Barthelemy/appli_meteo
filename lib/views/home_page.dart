@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/city.dart';
+import '../models/meteo.dart';
 import '../utils/variables.dart';
 
 class HomePage extends StatefulWidget {
@@ -31,10 +32,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Météo"),
-          elevation: 0,
-        ),
+      appBar: AppBar(
+        title: const Text("Météo"),
+        elevation: 0,
+      ),
       body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -59,7 +60,10 @@ class _HomePageState extends State<HomePage> {
                   }),
             )
           ]),
+      drawer: drawer(),
     );
+  }
+
   Drawer drawer() {
     return Drawer(
         child: Container(
@@ -88,8 +92,18 @@ class _HomePageState extends State<HomePage> {
               )
             ])));
   }
-}
 
-double convertKelvinToCelsus(double degree) {
-  return degree - 273.15;
+  void addFavoriteCity(String name) async {
+    await database.insertCity(City(name));
+    database.fetchCities().then((value) {
+      setState(() {
+        cities = value;
+      });
+    });
+    fieldText.clear();
+  }
+
+  double convertKelvinToCelsus(double degree) {
+    return degree - 273.15;
+  }
 }
