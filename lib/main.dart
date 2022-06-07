@@ -1,3 +1,4 @@
+import 'package:appli_meteo/bdd/database.dart';
 import 'package:appli_meteo/models/meteo.dart';
 import 'package:appli_meteo/services/meteo_service.dart';
 import 'package:appli_meteo/views/home_page.dart';
@@ -38,6 +39,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void initialization() async {
+    SqliteDB database = SqliteDB();
+    await database.initDb();
+    await database.fetchCities();
     Meteo cityWeather = await getCityWeather("Lyon");
     await Future.delayed(const Duration(seconds: 5));
     setState(() {
