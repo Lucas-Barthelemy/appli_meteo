@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../models/city.dart';
-import '../models/meteo.dart';
-import '../utils/variables.dart';
+import 'package:appli_meteo/models/city.dart';
+import 'package:appli_meteo/models/meteo.dart';
+import 'package:appli_meteo/utils/variables.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage(
@@ -18,8 +18,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Meteo> listHoursWeather = [];
   List<Meteo> list5DaysWeather = [];
-var fieldText = TextEditingController();
-late var cities = null;
+  var fieldText = TextEditingController();
+  late var cities;
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +34,7 @@ late var cities = null;
         list5DaysWeather.add(weather);
       }
     }
-database.fetchCities().then((value) {
+    database.fetchCities().then((value) {
       setState(() {
         cities = value;
       });
@@ -126,10 +127,10 @@ database.fetchCities().then((value) {
     });
     fieldText.clear();
   }
+}
 
-  double convertKelvinToCelsus(double degree) {
-    return degree - 273.15;
-  }
+double convertKelvinToCelsus(double degree) {
+  return degree - 273.15;
 }
 
 double convertMeterSecondToKilometerHour(double? speed) {
