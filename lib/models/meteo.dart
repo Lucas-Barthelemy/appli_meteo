@@ -1,10 +1,11 @@
 class Meteo {
-  int id;
-  String name;
+  int? id;
+  String? name;
   List<Weather> weather;
   Main main;
+  DateTime? date;
 
-  Meteo(this.id, this.name, this.weather, this.main);
+  Meteo(this.id, this.name, this.weather, this.main, this.date);
 }
 
 class Weather {
