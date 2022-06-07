@@ -16,13 +16,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var fieldText = TextEditingController();
-  late var cities = null;
-  late List<Meteo> list5DaysWeather;
+  List<Meteo> listHoursWeather = [];
+  List<Meteo> list5DaysWeather = [];
+var fieldText = TextEditingController();
+late var cities = null;
   @override
   void initState() {
     super.initState();
-    database.fetchCities().then((value) {
+    for (Meteo weather in widget.city5DaysWeather) {
+      if (weather.date!.day == DateTime.now().day) {
+        listHoursWeather.add(weather);
+      }
+    }
+    for (Meteo weather in widget.city5DaysWeather) {
+      if (weather.date!.hour == 12) {
+        list5DaysWeather.add(weather);
+      }
+    }
+database.fetchCities().then((value) {
       setState(() {
         cities = value;
       });
@@ -45,17 +56,30 @@ class _HomePageState extends State<HomePage> {
             Text(widget.cityWeather.weather[0].main),
             Text(widget.cityWeather.weather[0].description),
             Container(
-              height: 400,
+              height: 300,
               child: ListView.builder(
-                  itemCount: widget.city5DaysWeather.length,
+                  itemCount: listHoursWeather.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: Text(widget
-                          .city5DaysWeather[index].weather[0].description),
-                      subtitle:
-                          Text(widget.city5DaysWeather[index].date!.toString()),
+                      title:
+                          Text(listHoursWeather[index].weather[0].description),
+                      subtitle: Text(listHoursWeather[index].date!.toString()),
                       trailing: Text(
-                          "${convertKelvinToCelsus(widget.city5DaysWeather[index].main.temp).toStringAsFixed(0)}°C"),
+                          "${convertKelvinToCelsus(listHoursWeather[index].main.temp).toStringAsFixed(0)}°C\n${convertMeterSecondToKilometerHour(listHoursWeather[index].wind?.speed).toStringAsFixed(1)}km/h"),
+                    );
+                  }),
+            ),
+            Container(
+              height: 300,
+              child: ListView.builder(
+                  itemCount: list5DaysWeather.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title:
+                          Text(list5DaysWeather[index].weather[0].description),
+                      subtitle: Text(list5DaysWeather[index].date!.toString()),
+                      trailing: Text(
+                          "${convertKelvinToCelsus(list5DaysWeather[index].main.temp).toStringAsFixed(0)}°C\n${convertMeterSecondToKilometerHour(list5DaysWeather[index].wind?.speed).toStringAsFixed(1)}km/h"),
                     );
                   }),
             )
@@ -106,4 +130,9 @@ class _HomePageState extends State<HomePage> {
   double convertKelvinToCelsus(double degree) {
     return degree - 273.15;
   }
+}
+
+double convertMeterSecondToKilometerHour(double? speed) {
+  if (speed != null) return speed * 3.6;
+  return 0;
 }
