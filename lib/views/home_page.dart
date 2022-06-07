@@ -1,3 +1,4 @@
+import 'package:appli_meteo/bdd/database.dart';
 import 'package:appli_meteo/models/meteo.dart';
 import 'package:appli_meteo/services/meteo_service.dart';
 import 'package:flutter/material.dart';
@@ -14,11 +15,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late var cities = null;
   late List<Meteo> list5DaysWeather;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    widget.database.fetchCities().then((value) {
+      setState(() {
+        cities = value;
+      });
+    });
   }
 
   @override
