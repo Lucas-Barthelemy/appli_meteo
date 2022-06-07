@@ -1,6 +1,8 @@
-import 'package:appli_meteo/models/meteo.dart';
-import 'package:appli_meteo/services/meteo_service.dart';
 import 'package:flutter/material.dart';
+
+import '../models/city.dart';
+import '../models/meteo.dart';
+import '../utils/variables.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage(
@@ -14,16 +16,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  var fieldText = TextEditingController();
+  late var cities = null;
   late List<Meteo> list5DaysWeather;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    database.fetchCities().then((value) {
+      setState(() {
+        cities = value;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Météo"),
+        elevation: 0,
+      ),
       body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -48,10 +60,50 @@ class _HomePageState extends State<HomePage> {
                   }),
             )
           ]),
+      drawer: drawer(),
     );
   }
-}
 
-double convertKelvinToCelsus(double degree) {
-  return degree - 273.15;
+  Drawer drawer() {
+    return Drawer(
+        child: Container(
+            padding: const EdgeInsets.fromLTRB(10, 80, 10, 0),
+            child: Column(children: [
+              TextField(
+                controller: fieldText,
+                onSubmitted: (userValue) => addFavoriteCity(userValue),
+                decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: fieldText.clear,
+                    ),
+                    hintText: 'Ajouter une ville',
+                    border: InputBorder.none),
+              ),
+              Container(
+                height: 650,
+                child: ListView.builder(
+                    itemCount: cities.length,
+                    itemBuilder: ((context, index) {
+                      var city = cities[index];
+                      return ListTile(title: Text(city.name));
+                    })),
+              )
+            ])));
+  }
+
+  void addFavoriteCity(String name) async {
+    await database.insertCity(City(name));
+    database.fetchCities().then((value) {
+      setState(() {
+        cities = value;
+      });
+    });
+    fieldText.clear();
+  }
+
+  double convertKelvinToCelsus(double degree) {
+    return degree - 273.15;
+  }
 }

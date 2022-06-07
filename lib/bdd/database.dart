@@ -2,7 +2,7 @@ import "dart:io" as io;
 import "package:path/path.dart";
 import 'package:sqflite/sqflite.dart';
 
-import '../models/meteo.dart';
+import '../models/city.dart';
 
 class SqliteDB {
   late Database _db;
