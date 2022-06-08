@@ -210,11 +210,11 @@ class _HomePageState extends State<HomePage> {
                   value: convertToDate(widget.cityWeather.sys!.sunset)),
               DetailWeather(
                   information: "Humidité",
-                  value: widget.cityWeather.main.humidity.toString() + "%"),
+                  value: "${widget.cityWeather.main.humidity}%"),
               DetailWeather(
                   information: "°C Ambiante",
-                  value: widget.cityWeather.main.feelsLike.toStringAsFixed(0) +
-                      " °C"),
+                  value:
+                      "${widget.cityWeather.main.feelsLike.toStringAsFixed(0)} °C"),
             ],
           ),
         )
@@ -224,7 +224,7 @@ class _HomePageState extends State<HomePage> {
 
   String convertToDate(int value) {
     var date = DateTime.fromMillisecondsSinceEpoch(value * 1000);
-    return date.hour.toString() + ":" + date.minute.toString();
+    return "${date.hour}:${date.minute}";
   }
 
   Drawer drawer() {
@@ -234,10 +234,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(children: [
               TextField(
                 controller: fieldText,
-                onSubmitted: (userValue) {
-                  addFavoriteCity(userValue);
-                  widget.
-                },
+                onSubmitted: (userValue) => addFavoriteCity(userValue),
                 decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: IconButton(
@@ -257,7 +254,7 @@ class _HomePageState extends State<HomePage> {
                             return ListTile(title: Text(city.name));
                           })),
                     )
-                  : Text("LOADER")
+                  : const Text("LOADER")
             ])));
   }
 
