@@ -1,5 +1,7 @@
 import 'package:appli_meteo/components/detailWeather.dart';
 import 'package:appli_meteo/components/weatherInformation.dart';
+import 'package:appli_meteo/main.dart';
+import 'package:appli_meteo/services/color.dart';
 import 'package:flutter/material.dart';
 
 import 'package:appli_meteo/models/city.dart';
@@ -7,11 +9,15 @@ import 'package:appli_meteo/models/meteo.dart';
 import 'package:appli_meteo/utils/variables.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage(
-      {Key? key, required this.cityWeather, required this.city5DaysWeather})
+  HomePage(
+      {Key? key,
+      required this.cityWeather,
+      required this.city5DaysWeather,
+      required this.myAppSettings})
       : super(key: key);
   final Meteo cityWeather;
   final List<Meteo> city5DaysWeather;
+  MyAppSettings myAppSettings;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -47,6 +53,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Météo"),
+        backgroundColor: getColor(widget.cityWeather.weather[0].icon),
         elevation: 0,
       ),
       body: Column(
@@ -64,15 +71,15 @@ class _HomePageState extends State<HomePage> {
       child: Container(
         height: MediaQuery.of(context).size.height * 0.5,
         width: MediaQuery.of(context).size.width,
-        color: Colors.red,
+        color: getColor(widget.cityWeather.weather[0].icon),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(height: 20), // give it width
-              const Text("LYON",
-                  style: TextStyle(
+              const SizedBox(height: 20), // give it width
+              Text(widget.cityWeather.name!,
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 50,
                       fontWeight: FontWeight.bold,
@@ -81,14 +88,16 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "low 10°",
-                    style: TextStyle(color: Colors.white),
+                    "${widget.cityWeather.main.tempMin.toStringAsFixed(0)}°",
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  SizedBox(width: 20), // give it width
-                  Text("21°",
-                      style: TextStyle(color: Colors.white, fontSize: 35)),
-                  SizedBox(width: 20), // give it width
-                  Text("high 30°", style: TextStyle(color: Colors.white))
+                  const SizedBox(width: 20), // give it width
+                  Text("${widget.cityWeather.main.temp.toStringAsFixed(0)}°",
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 35)),
+                  const SizedBox(width: 20), // give it width
+                  Text("${widget.cityWeather.main.tempMax.toStringAsFixed(0)}°",
+                      style: const TextStyle(color: Colors.white))
                 ],
               ),
               SizedBox(height: 30), // give it width
@@ -101,7 +110,7 @@ class _HomePageState extends State<HomePage> {
 
   Container descriptionMeteo() {
     return Container(
-        color: Colors.red,
+        color: getColor(widget.cityWeather.weather[0].icon),
         height: MediaQuery.of(context).size.height * 0.38,
         width: MediaQuery.of(context).size.width,
         child: ClipRRect(
@@ -201,11 +210,11 @@ class _HomePageState extends State<HomePage> {
                   value: convertToDate(widget.cityWeather.sys!.sunset)),
               DetailWeather(
                   information: "Humidité",
-                  value: widget.cityWeather.main.humidity.toString() + "%"),
+                  value: "${widget.cityWeather.main.humidity}%"),
               DetailWeather(
                   information: "°C Ambiante",
-                  value: widget.cityWeather.main.feelsLike.toStringAsFixed(0) +
-                      " °C"),
+                  value:
+                      "${widget.cityWeather.main.feelsLike.toStringAsFixed(0)} °C"),
             ],
           ),
         )
@@ -215,7 +224,7 @@ class _HomePageState extends State<HomePage> {
 
   String convertToDate(int value) {
     var date = DateTime.fromMillisecondsSinceEpoch(value * 1000);
-    return date.hour.toString() + ":" + date.minute.toString();
+    return "${date.hour}:${date.minute}";
   }
 
   Drawer drawer() {
@@ -245,7 +254,7 @@ class _HomePageState extends State<HomePage> {
                             return ListTile(title: Text(city.name));
                           })),
                     )
-                  : Text("LOADER")
+                  : const Text("LOADER")
             ])));
   }
 
