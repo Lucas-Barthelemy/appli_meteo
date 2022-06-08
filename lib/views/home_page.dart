@@ -1,3 +1,5 @@
+import 'package:appli_meteo/components/detailWeather.dart';
+import 'package:appli_meteo/components/weatherInformation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:appli_meteo/models/city.dart';
@@ -19,8 +21,7 @@ class _HomePageState extends State<HomePage> {
   List<Meteo> listHoursWeather = [];
   List<Meteo> list5DaysWeather = [];
   var fieldText = TextEditingController();
-  late var cities;
-
+  late var cities = null;
   @override
   void initState() {
     super.initState();
@@ -49,43 +50,109 @@ class _HomePageState extends State<HomePage> {
         elevation: 0,
       ),
       body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(widget.cityWeather.name!),
-            Text(
-                "${convertKelvinToCelsus(widget.cityWeather.main.temp).toStringAsFixed(0)}°C"),
-            Text(widget.cityWeather.weather[0].main),
-            Text(widget.cityWeather.weather[0].description),
-            Container(
-              height: 300,
-              child: ListView.builder(
-                  itemCount: listHoursWeather.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title:
-                          Text(listHoursWeather[index].weather[0].description),
-                      subtitle: Text(listHoursWeather[index].date!.toString()),
-                      trailing: Text(
-                          "${convertKelvinToCelsus(listHoursWeather[index].main.temp).toStringAsFixed(0)}°C\n${convertMeterSecondToKilometerHour(listHoursWeather[index].wind?.speed).toStringAsFixed(1)}km/h"),
-                    );
-                  }),
-            ),
-            Container(
-              height: 300,
-              child: ListView.builder(
-                  itemCount: list5DaysWeather.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title:
-                          Text(list5DaysWeather[index].weather[0].description),
-                      subtitle: Text(list5DaysWeather[index].date!.toString()),
-                      trailing: Text(
-                          "${convertKelvinToCelsus(list5DaysWeather[index].main.temp).toStringAsFixed(0)}°C\n${convertMeterSecondToKilometerHour(list5DaysWeather[index].wind?.speed).toStringAsFixed(1)}km/h"),
-                    );
-                  }),
-            )
-          ]),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [header(), descriptionMeteo()]),
       drawer: drawer(),
+    );
+  }
+
+  ClipRRect header() {
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(bottomRight: Radius.circular(50)),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.5,
+        width: MediaQuery.of(context).size.width,
+        color: Colors.red,
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 20), // give it width
+              const Text("LYON",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 50,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 5)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "low 10°",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(width: 20), // give it width
+                  Text("21°",
+                      style: TextStyle(color: Colors.white, fontSize: 35)),
+                  SizedBox(width: 20), // give it width
+                  Text("high 30°", style: TextStyle(color: Colors.white))
+                ],
+              ),
+              SizedBox(height: 30), // give it width
+              Image.asset("soleil.png",
+                  height: MediaQuery.of(context).size.height * 0.25),
+            ]),
+      ),
+    );
+  }
+
+  Container descriptionMeteo() {
+    return Container(
+        color: Colors.red,
+        height: MediaQuery.of(context).size.height * 0.38,
+        width: MediaQuery.of(context).size.width,
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
+          child: Container(
+              padding: const EdgeInsets.all(10),
+              color: Colors.white,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: ((context, index) {
+                            var meteo = widget.city5DaysWeather[index];
+                            return WeatherInformations(meteo.main.temp,
+                                meteo.date!.hour.toString(), "soleil.png");
+                          }),
+                          itemCount: widget.city5DaysWeather.length),
+                    ),
+                    rowInformations() // give it width
+                  ])),
+        ));
+  }
+
+  Row rowInformations() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          width: MediaQuery.of(context).size.width * 0.4,
+          child: Column(
+            children: [
+              DetailWeather(information: "Sunrise", value: "05:47"),
+              DetailWeather(information: "Sunrise", value: "05:47"),
+              DetailWeather(information: "Sunrise", value: "05:47")
+            ],
+          ),
+        ),
+        Container(
+          width: MediaQuery.of(context).size.width * 0.4,
+          child: Column(
+            children: [
+              DetailWeather(information: "Sunrise", value: "05:47"),
+              DetailWeather(information: "Sunrise", value: "05:47"),
+              DetailWeather(information: "Sunrise", value: "05:47")
+            ],
+          ),
+        )
+      ],
     );
   }
 
@@ -106,15 +173,17 @@ class _HomePageState extends State<HomePage> {
                     hintText: 'Ajouter une ville',
                     border: InputBorder.none),
               ),
-              Container(
-                height: 650,
-                child: ListView.builder(
-                    itemCount: cities.length,
-                    itemBuilder: ((context, index) {
-                      var city = cities[index];
-                      return ListTile(title: Text(city.name));
-                    })),
-              )
+              cities != null
+                  ? Container(
+                      height: 650,
+                      child: ListView.builder(
+                          itemCount: cities.length,
+                          itemBuilder: ((context, index) {
+                            var city = cities[index];
+                            return ListTile(title: Text(city.name));
+                          })),
+                    )
+                  : Text("LOADER")
             ])));
   }
 
@@ -127,13 +196,4 @@ class _HomePageState extends State<HomePage> {
     });
     fieldText.clear();
   }
-}
-
-double convertKelvinToCelsus(double degree) {
-  return degree - 273.15;
-}
-
-double convertMeterSecondToKilometerHour(double? speed) {
-  if (speed != null) return speed * 3.6;
-  return 0;
 }
