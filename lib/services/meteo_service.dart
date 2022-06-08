@@ -8,8 +8,12 @@ Future<Meteo> getCityWeather(String name) async {
 
   // https://api.openweathermap.org/data/2.5/weather?q={ville}&appid={API key}
 
-  var uri = Uri.https("api.openweathermap.org", "/data/2.5/weather",
-      {"q": name, "lang": "fr", "appid": "841df294d282a84958d22be38fc1800f"});
+  var uri = Uri.https("api.openweathermap.org", "/data/2.5/weather", {
+    "q": name,
+    "units": "metric",
+    "lang": "fr",
+    "appid": "841df294d282a84958d22be38fc1800f"
+  });
   var response = await http.get(uri);
   if (response.statusCode == 200) {
     var jsonResponse = jsonDecode(response.body);
@@ -30,8 +34,12 @@ Future<List<Meteo>> getCity5DaysWeather(String name) async {
   List<Meteo> list5DaysWeather = [];
 
   // https://api.openweathermap.org/data/2.5/forecast?q={ville}&appid={key}
-  var uri = Uri.https("api.openweathermap.org", "/data/2.5/forecast",
-      {"q": name, "lang": "fr", "appid": "841df294d282a84958d22be38fc1800f"});
+  var uri = Uri.https("api.openweathermap.org", "/data/2.5/forecast", {
+    "q": name,
+    "units": "metric",
+    "lang": "fr",
+    "appid": "841df294d282a84958d22be38fc1800f"
+  });
   var response = await http.get(uri);
   if (response.statusCode == 200) {
     var jsonResponse = jsonDecode(response.body);

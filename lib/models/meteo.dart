@@ -18,9 +18,9 @@ class Weather {
 
 class Main {
   int pressure, humidity;
-  double temp, temp_min, temp_max;
+  double temp, tempMin, tempMax;
 
-  Main(this.temp, this.pressure, this.humidity, this.temp_min, this.temp_max);
+  Main(this.temp, this.pressure, this.humidity, this.tempMin, this.tempMax);
 }
 
 class Wind {
