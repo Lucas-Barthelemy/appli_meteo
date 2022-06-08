@@ -123,20 +123,7 @@ class _HomePageState extends State<HomePage> {
                           }),
                           itemCount: widget.city5DaysWeather.length),
                     ),
-                    SizedBox(height: 10),
-                    rowInformations(),
-                    SizedBox(height: 10),
-
-                    Expanded(
-                      child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: ((context, index) {
-                            var meteo = widget.city5DaysWeather[index];
-                            return WeatherInformations(meteo.main.temp,
-                                meteo.date!.hour.toString(), "soleil.png");
-                          }),
-                          itemCount: widget.city5DaysWeather.length),
-                    ), // give it width
+                    rowInformations() // give it width
                   ])),
         ));
   }
