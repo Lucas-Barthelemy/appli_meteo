@@ -16,7 +16,7 @@ class WeatherInformations extends StatelessWidget {
           children: [
             Text(hours.toString()),
             const SizedBox(height: 5),
-            Image.asset(pathImage, height: 50, width: 50),
+            Image.asset(pathImage, height: 40, width: 40),
             const SizedBox(height: 10),
             Text(degrees.toString() + "°",
                 style: const TextStyle(fontWeight: FontWeight.bold)),
