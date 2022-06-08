@@ -3,16 +3,28 @@ import 'package:appli_meteo/utils/variables.dart';
 import 'package:appli_meteo/views/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 import 'models/meteo.dart';
 
-void main() {
-  runApp(const MyApp());
+class MyAppSettings {
+  MyAppSettings(StreamingSharedPreferences preferences)
+      : city = preferences.getString('city', defaultValue: "Paris");
+
+  final Preference<String> city;
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final preferences = await StreamingSharedPreferences.instance;
+  final settings = MyAppSettings(preferences);
+
+  runApp(MyApp(myAppSettings: settings));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
+  MyApp({Key? key, required this.myAppSettings}) : super(key: key);
+  MyAppSettings myAppSettings;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,13 +32,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(myAppSettings: myAppSettings),
     );
   }
 }
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  SplashScreen({Key? key, required this.myAppSettings}) : super(key: key);
+  MyAppSettings myAppSettings;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -41,15 +54,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void initialization() async {
     await database.initDb();
-    Meteo cityWeather = await getCityWeather("Lyon");
-    List<Meteo> city5DaysWeather = await getCity5DaysWeather("Lyon");
+    Meteo cityWeather =
+        await getCityWeather(widget.myAppSettings.city.getValue());
+    List<Meteo> city5DaysWeather =
+        await getCity5DaysWeather(widget.myAppSettings.city.getValue());
     setState(() {
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => HomePage(
                   cityWeather: cityWeather,
-                  city5DaysWeather: city5DaysWeather)));
+                  city5DaysWeather: city5DaysWeather,
+                  myAppSettings: widget.myAppSettings)));
     });
     FlutterNativeSplash.remove();
   }
