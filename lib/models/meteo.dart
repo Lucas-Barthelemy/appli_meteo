@@ -20,9 +20,10 @@ class Weather {
 
 class Main {
   int pressure, humidity;
-  double temp, tempMin, tempMax;
+  double temp, tempMin, tempMax, feelsLike;
 
-  Main(this.temp, this.pressure, this.humidity, this.tempMin, this.tempMax);
+  Main(this.temp, this.pressure, this.humidity, this.tempMin, this.tempMax,
+      this.feelsLike);
 }
 
 class Sys {

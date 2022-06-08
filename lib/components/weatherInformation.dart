@@ -14,11 +14,11 @@ class WeatherInformations extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(hours.toString()),
+            Text(hours),
             const SizedBox(height: 5),
             Image.asset(pathImage, height: 40, width: 40),
             const SizedBox(height: 10),
-            Text(degrees.toString() + "°",
+            Text(degrees.toStringAsFixed(0) + "°",
                 style: const TextStyle(fontWeight: FontWeight.bold)),
           ]),
     );

@@ -8,15 +8,18 @@ class DetailWeather extends StatelessWidget {
 
   @override
   Widget build(Object context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(information),
-        Text(
-          value,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        )
-      ],
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(information),
+          Text(
+            value,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          )
+        ],
+      ),
     );
   }
 }

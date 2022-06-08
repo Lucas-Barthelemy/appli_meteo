@@ -113,29 +113,59 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: ((context, index) {
-                            var meteo = widget.city5DaysWeather[index];
-                            return WeatherInformations(meteo.main.temp,
-                                meteo.date!.hour.toString(), "soleil.png");
-                          }),
-                          itemCount: widget.city5DaysWeather.length),
-                    ),
+                    listHoursWeather.isNotEmpty
+                        ? Expanded(
+                            child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: ((context, index) {
+                                  var meteo = listHoursWeather[index];
+                                  return WeatherInformations(
+                                      meteo.main.temp,
+                                      meteo.date!.hour.toString(),
+                                      "soleil.png");
+                                }),
+                                itemCount: listHoursWeather.length),
+                          )
+                        : Text(""),
                     SizedBox(height: 10),
                     rowInformations(),
-                    SizedBox(height: 10),
-
+                    SizedBox(height: 7),
                     Expanded(
                       child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemBuilder: ((context, index) {
-                            var meteo = widget.city5DaysWeather[index];
-                            return WeatherInformations(meteo.main.temp,
-                                meteo.date!.hour.toString(), "soleil.png");
+                            var meteo = list5DaysWeather[index];
+                            var value = meteo.date!.weekday;
+                            var day = "";
+                            switch (value) {
+                              case 1:
+                                day = "Lun";
+                                break;
+                              case 2:
+                                day = "Mar";
+                                break;
+                              case 3:
+                                day = "Mer";
+                                break;
+                              case 4:
+                                day = "Jeu";
+                                break;
+                              case 5:
+                                day = "Ven";
+                                break;
+                              case 6:
+                                day = "Sam";
+                                break;
+                              case 7:
+                                day = "Dim";
+                                break;
+                              default:
+                                day = "";
+                            }
+                            return WeatherInformations(
+                                meteo.main.temp, day, "soleil.png");
                           }),
-                          itemCount: widget.city5DaysWeather.length),
+                          itemCount: list5DaysWeather.length),
                     ), // give it width
                   ])),
         ));
@@ -149,9 +179,16 @@ class _HomePageState extends State<HomePage> {
           width: MediaQuery.of(context).size.width * 0.4,
           child: Column(
             children: [
-              DetailWeather(information: "Sunrise", value: "05:47"),
-              DetailWeather(information: "Sunrise", value: "05:47"),
-              DetailWeather(information: "Sunrise", value: "05:47")
+              DetailWeather(
+                  information: "Levé du soleil",
+                  value: convertToDate(widget.cityWeather.sys!.sunrise)),
+              DetailWeather(
+                  information: "Vent",
+                  value:
+                      "${(widget.cityWeather.wind!.speed * 3.6).toStringAsFixed(1)} km/h"),
+              DetailWeather(
+                  information: "Pression",
+                  value: "${widget.cityWeather.main!.pressure} hPa"),
             ],
           ),
         ),
@@ -159,14 +196,26 @@ class _HomePageState extends State<HomePage> {
           width: MediaQuery.of(context).size.width * 0.4,
           child: Column(
             children: [
-              DetailWeather(information: "Sunrise", value: "05:47"),
-              DetailWeather(information: "Sunrise", value: "05:47"),
-              DetailWeather(information: "Sunrise", value: "05:47")
+              DetailWeather(
+                  information: "Couché du soleil",
+                  value: convertToDate(widget.cityWeather.sys!.sunset)),
+              DetailWeather(
+                  information: "Humidité",
+                  value: widget.cityWeather.main.humidity.toString() + "%"),
+              DetailWeather(
+                  information: "°C Ambiante",
+                  value: widget.cityWeather.main.feelsLike.toStringAsFixed(0) +
+                      " °C"),
             ],
           ),
         )
       ],
     );
+  }
+
+  String convertToDate(int value) {
+    var date = DateTime.fromMillisecondsSinceEpoch(value * 1000);
+    return date.hour.toString() + ":" + date.minute.toString();
   }
 
   Drawer drawer() {

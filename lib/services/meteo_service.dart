@@ -4,7 +4,7 @@ import 'package:appli_meteo/models/meteo.dart';
 import 'package:http/http.dart' as http;
 
 Future<Meteo> getCityWeather(String name) async {
-  Meteo meteo = Meteo(0, "", [], Main(0, 0, 0, 0, 0), null, Wind(0.0), null);
+  Meteo meteo = Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), null, Wind(0.0), null);
 
   // https://api.openweathermap.org/data/2.5/weather?q={ville}&appid={API key}
 
@@ -74,7 +74,8 @@ Main convertToMain(dynamic dynamic) {
       dynamic["pressure"],
       dynamic["humidity"],
       dynamic["temp_min"].toDouble(),
-      dynamic["temp_max"].toDouble());
+      dynamic["temp_max"].toDouble(),
+      dynamic["feels_like"].toDouble());
 }
 
 DateTime convertToDateTime(String date) {
