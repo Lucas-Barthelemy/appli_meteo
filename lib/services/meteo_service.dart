@@ -4,7 +4,7 @@ import 'package:appli_meteo/models/meteo.dart';
 import 'package:http/http.dart' as http;
 
 Future<Meteo> getCityWeather(String name) async {
-  Meteo meteo = Meteo(0, "", [], Main(0, 0, 0, 0, 0), Wind(0.0), null);
+  Meteo meteo = Meteo(0, "", [], Main(0, 0, 0, 0, 0), null, Wind(0.0), null);
 
   // https://api.openweathermap.org/data/2.5/weather?q={ville}&appid={API key}
 
@@ -17,11 +17,13 @@ Future<Meteo> getCityWeather(String name) async {
   var response = await http.get(uri);
   if (response.statusCode == 200) {
     var jsonResponse = jsonDecode(response.body);
+    print(jsonResponse);
     List<Weather> listWeather = convertToWeather(jsonResponse["weather"]);
     Main main = convertToMain(jsonResponse["main"]);
     Wind wind = convertToWind(jsonResponse["wind"]);
+    Sys sys = convertToSys(jsonResponse["sys"]);
     meteo = Meteo(jsonResponse["id"], jsonResponse["name"], listWeather, main,
-        wind, null);
+        sys, wind, null);
   } else {
     // ignore: avoid_print
     print("Request failed with status: ${response.statusCode}");
@@ -48,7 +50,7 @@ Future<List<Meteo>> getCity5DaysWeather(String name) async {
       Main main = convertToMain(data["main"]);
       Wind wind = convertToWind(data["wind"]);
       DateTime date = convertToDateTime(data["dt_txt"]);
-      Meteo meteo = Meteo(null, null, listWeather, main, wind, date);
+      Meteo meteo = Meteo(null, null, listWeather, main, null, wind, date);
       list5DaysWeather.add(meteo);
     }
   } else {
@@ -81,4 +83,9 @@ DateTime convertToDateTime(String date) {
 
 Wind convertToWind(dynamic dynamic) {
   return Wind(dynamic["speed"].toDouble());
+}
+
+Sys convertToSys(dynamic dynamic) {
+  return Sys(dynamic["type"], dynamic["id"], dynamic["country"],
+      dynamic["sunrise"], dynamic["sunset"]);
 }
