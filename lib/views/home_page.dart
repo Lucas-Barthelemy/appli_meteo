@@ -186,6 +186,9 @@ class _HomePageState extends State<HomePage> {
                   information: "Vent",
                   value:
                       "${(widget.cityWeather.wind!.speed * 3.6).toStringAsFixed(1)} km/h"),
+              DetailWeather(
+                  information: "Pression",
+                  value: "${widget.cityWeather.main!.pressure} hPa"),
             ],
           ),
         ),
