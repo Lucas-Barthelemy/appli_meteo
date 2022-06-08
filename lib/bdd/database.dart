@@ -1,19 +1,21 @@
 import "package:path/path.dart";
 import 'package:sqflite/sqflite.dart';
 
-import '../models/city.dart';
+import 'package:appli_meteo/models/city.dart';
 
 class SqliteDB {
   late Database _db;
 
   Future<Database> get db async {
-    if (_db != null) return _db;
-    _db = await initDb();
     return _db;
   }
 
   Future<int> insertCity(City city) async {
     return await _db.insert('cities', city.toMap());
+  }
+
+  void delete(City city) async {
+    await _db.delete("cities", where: 'name = ?', whereArgs: [city.name]);
   }
 
   Future fetchCities() async {

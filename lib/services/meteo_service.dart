@@ -4,7 +4,8 @@ import 'package:appli_meteo/models/meteo.dart';
 import 'package:http/http.dart' as http;
 
 Future<Meteo> getCityWeather(String name) async {
-  Meteo meteo = Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), null, Wind(0.0), null);
+  Meteo meteo =
+      Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), null, Wind(0.0), DateTime(2022));
 
   // https://api.openweathermap.org/data/2.5/weather?q={ville}&appid={API key}
 
@@ -17,13 +18,14 @@ Future<Meteo> getCityWeather(String name) async {
   var response = await http.get(uri);
   if (response.statusCode == 200) {
     var jsonResponse = jsonDecode(response.body);
-    print(jsonResponse);
     List<Weather> listWeather = convertToWeather(jsonResponse["weather"]);
     Main main = convertToMain(jsonResponse["main"]);
     Wind wind = convertToWind(jsonResponse["wind"]);
     Sys sys = convertToSys(jsonResponse["sys"]);
+    DateTime date =
+        convertToLocalHour(jsonResponse["dt"], jsonResponse["timezone"]);
     meteo = Meteo(jsonResponse["id"], jsonResponse["name"], listWeather, main,
-        sys, wind, null);
+        sys, wind, date);
   } else {
     // ignore: avoid_print
     print("Request failed with status: ${response.statusCode}");
@@ -42,6 +44,7 @@ Future<List<Meteo>> getCity5DaysWeather(String name) async {
     "lang": "fr",
     "appid": "841df294d282a84958d22be38fc1800f"
   });
+  print(uri);
   var response = await http.get(uri);
   if (response.statusCode == 200) {
     var jsonResponse = jsonDecode(response.body);
@@ -82,11 +85,16 @@ DateTime convertToDateTime(String date) {
   return DateTime.parse(date);
 }
 
+DateTime convertToLocalHour(dynamic dt, dynamic timezone) {
+  return DateTime.fromMillisecondsSinceEpoch(
+      (dt.toInt() + timezone.toInt()) * 1000,
+      isUtc: true);
+}
+
 Wind convertToWind(dynamic dynamic) {
   return Wind(dynamic["speed"].toDouble());
 }
 
 Sys convertToSys(dynamic dynamic) {
-  return Sys(dynamic["type"], dynamic["id"], dynamic["country"],
-      dynamic["sunrise"], dynamic["sunset"]);
+  return Sys(dynamic["country"], dynamic["sunrise"], dynamic["sunset"]);
 }

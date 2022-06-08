@@ -33,7 +33,7 @@ Color getColor(String icon) {
     // Neige
     case "13d":
     case "13n":
-      return Colors.white;
+      return const Color.fromARGB(255, 196, 232, 239);
     // Brouillard
     case "50d":
     case "50n":

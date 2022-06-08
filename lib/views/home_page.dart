@@ -1,43 +1,59 @@
-import 'package:appli_meteo/components/detailWeather.dart';
-import 'package:appli_meteo/components/weatherInformation.dart';
+import 'package:appli_meteo/components/detail_weather.dart';
+import 'package:appli_meteo/components/weather_information.dart';
+import 'package:appli_meteo/extensions/string.dart';
 import 'package:appli_meteo/main.dart';
 import 'package:appli_meteo/services/color.dart';
+import 'package:appli_meteo/services/day.dart';
+import 'package:appli_meteo/services/meteo_service.dart';
 import 'package:flutter/material.dart';
 
 import 'package:appli_meteo/models/city.dart';
 import 'package:appli_meteo/models/meteo.dart';
 import 'package:appli_meteo/utils/variables.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage(
-      {Key? key,
-      required this.cityWeather,
-      required this.city5DaysWeather,
-      required this.myAppSettings})
-      : super(key: key);
-  final Meteo cityWeather;
-  final List<Meteo> city5DaysWeather;
-  MyAppSettings myAppSettings;
+  const HomePage({Key? key, required this.myAppSettings}) : super(key: key);
+  final MyAppSettings myAppSettings;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  Meteo cityWeather =
+      Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), null, Wind(0.0), DateTime(2022));
+  List<Meteo> city5DaysWeather = [];
   List<Meteo> listHoursWeather = [];
   List<Meteo> list5DaysWeather = [];
   var fieldText = TextEditingController();
-  late var cities = null;
+  dynamic cities = [];
+  bool charged = false;
+
   @override
   void initState() {
     super.initState();
-    for (Meteo weather in widget.city5DaysWeather) {
-      if (weather.date!.day == DateTime.now().day) {
-        listHoursWeather.add(weather);
+    initialization().then((data) {
+      setState(() {
+        charged = data;
+      });
+    });
+  }
+
+  Future initialization() async {
+    await database.initDb();
+    cityWeather = await getCityWeather(widget.myAppSettings.city.getValue());
+    city5DaysWeather =
+        await getCity5DaysWeather(widget.myAppSettings.city.getValue());
+    int idx = 0;
+    while (listHoursWeather.length < 8) {
+      if (city5DaysWeather[idx].date.isAfter(cityWeather.date)) {
+        listHoursWeather.add(city5DaysWeather[idx]);
       }
+      idx++;
     }
-    for (Meteo weather in widget.city5DaysWeather) {
-      if (weather.date!.hour == 12) {
+    for (Meteo weather in city5DaysWeather) {
+      if (weather.date.hour == 12) {
         list5DaysWeather.add(weather);
       }
     }
@@ -46,23 +62,32 @@ class _HomePageState extends State<HomePage> {
         cities = value;
       });
     });
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Météo"),
-        backgroundColor: getColor(widget.cityWeather.weather[0].icon),
-        elevation: 0,
-      ),
-      body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [header(), descriptionMeteo()]),
-      drawer: drawer(),
-    );
+    if (charged == false) {
+      return Container();
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Météo"),
+          backgroundColor: getColor(cityWeather.weather[0].icon),
+          elevation: 0,
+        ),
+        body: PreferenceBuilder<String>(
+            preference: widget.myAppSettings.city,
+            builder: (BuildContext context, String city) {
+              return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [header(), descriptionMeteo()]);
+            }),
+        drawer: drawer(),
+      );
+    }
   }
 
   ClipRRect header() {
@@ -71,38 +96,38 @@ class _HomePageState extends State<HomePage> {
       child: Container(
         height: MediaQuery.of(context).size.height * 0.5,
         width: MediaQuery.of(context).size.width,
-        color: getColor(widget.cityWeather.weather[0].icon),
+        color: getColor(cityWeather.weather[0].icon),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 20), // give it width
-              Text(widget.cityWeather.name!,
+              const SizedBox(height: 20),
+              Text(cityWeather.name!,
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 50,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 5)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "${widget.cityWeather.main.tempMin.toStringAsFixed(0)}°",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(width: 20), // give it width
-                  Text("${widget.cityWeather.main.temp.toStringAsFixed(0)}°",
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 35)),
-                  const SizedBox(width: 20), // give it width
-                  Text("${widget.cityWeather.main.tempMax.toStringAsFixed(0)}°",
-                      style: const TextStyle(color: Colors.white))
-                ],
-              ),
-              SizedBox(height: 30), // give it width
-              Image.asset("soleil.png",
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text(
+                  "${cityWeather.main.tempMin.toStringAsFixed(0)}°",
+                  style: const TextStyle(color: Colors.white),
+                ),
+                const SizedBox(width: 20), // give it width
+                Text("${cityWeather.main.temp.toStringAsFixed(0)}°",
+                    style: const TextStyle(color: Colors.white, fontSize: 35)),
+                const SizedBox(width: 20), // give it width
+                Text("${cityWeather.main.tempMax.toStringAsFixed(0)}°",
+                    style: const TextStyle(color: Colors.white))
+              ]),
+              const SizedBox(height: 30), // give it width
+              Image.asset(
+                  "assets/weather_icon/${cityWeather.weather[0].icon.substring(0, 2)}.png",
                   height: MediaQuery.of(context).size.height * 0.25),
+              const SizedBox(width: 30), // give it width
+              Text(cityWeather.weather[0].description.capitalize(),
+                  style: const TextStyle(color: Colors.white, fontSize: 20))
             ]),
       ),
     );
@@ -110,11 +135,11 @@ class _HomePageState extends State<HomePage> {
 
   Container descriptionMeteo() {
     return Container(
-        color: getColor(widget.cityWeather.weather[0].icon),
+        color: getColor(cityWeather.weather[0].icon),
         height: MediaQuery.of(context).size.height * 0.38,
         width: MediaQuery.of(context).size.width,
         child: ClipRRect(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(50)),
           child: Container(
               padding: const EdgeInsets.all(10),
               color: Colors.white,
@@ -129,53 +154,18 @@ class _HomePageState extends State<HomePage> {
                                 itemBuilder: ((context, index) {
                                   var meteo = listHoursWeather[index];
                                   return WeatherInformations(
-                                      meteo.main.temp,
-                                      meteo.date!.hour.toString(),
-                                      "soleil.png");
+                                      degrees: meteo.main.temp,
+                                      hours: "${meteo.date.hour.toString()}h",
+                                      pathImage:
+                                          "assets/weather_icon/${listHoursWeather[index].weather[0].icon.substring(0, 2)}.png");
                                 }),
                                 itemCount: listHoursWeather.length),
                           )
-                        : Text(""),
-                    SizedBox(height: 10),
+                        : const Text(""),
+                    const SizedBox(height: 10),
                     rowInformations(),
-                    SizedBox(height: 7),
-                    Expanded(
-                      child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: ((context, index) {
-                            var meteo = list5DaysWeather[index];
-                            var value = meteo.date!.weekday;
-                            var day = "";
-                            switch (value) {
-                              case 1:
-                                day = "Lun";
-                                break;
-                              case 2:
-                                day = "Mar";
-                                break;
-                              case 3:
-                                day = "Mer";
-                                break;
-                              case 4:
-                                day = "Jeu";
-                                break;
-                              case 5:
-                                day = "Ven";
-                                break;
-                              case 6:
-                                day = "Sam";
-                                break;
-                              case 7:
-                                day = "Dim";
-                                break;
-                              default:
-                                day = "";
-                            }
-                            return WeatherInformations(
-                                meteo.main.temp, day, "soleil.png");
-                          }),
-                          itemCount: list5DaysWeather.length),
-                    ), // give it width
+                    const SizedBox(height: 7),
+                    weather5Days(),
                   ])),
         ));
   }
@@ -184,37 +174,36 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
+        SizedBox(
           width: MediaQuery.of(context).size.width * 0.4,
           child: Column(
             children: [
               DetailWeather(
                   information: "Levé du soleil",
-                  value: convertToDate(widget.cityWeather.sys!.sunrise)),
+                  value: convertToDate(cityWeather.sys!.sunrise)),
               DetailWeather(
                   information: "Vent",
                   value:
-                      "${(widget.cityWeather.wind!.speed * 3.6).toStringAsFixed(1)} km/h"),
+                      "${(cityWeather.wind!.speed * 3.6).toStringAsFixed(1)} km/h"),
               DetailWeather(
                   information: "Pression",
-                  value: "${widget.cityWeather.main!.pressure} hPa"),
+                  value: "${cityWeather.main.pressure} hPa"),
             ],
           ),
         ),
-        Container(
+        SizedBox(
           width: MediaQuery.of(context).size.width * 0.4,
           child: Column(
             children: [
               DetailWeather(
                   information: "Couché du soleil",
-                  value: convertToDate(widget.cityWeather.sys!.sunset)),
+                  value: convertToDate(cityWeather.sys!.sunset)),
               DetailWeather(
                   information: "Humidité",
-                  value: "${widget.cityWeather.main.humidity}%"),
+                  value: "${cityWeather.main.humidity}%"),
               DetailWeather(
                   information: "°C Ambiante",
-                  value:
-                      "${widget.cityWeather.main.feelsLike.toStringAsFixed(0)} °C"),
+                  value: "${cityWeather.main.feelsLike.toStringAsFixed(0)} °C"),
             ],
           ),
         )
@@ -227,6 +216,19 @@ class _HomePageState extends State<HomePage> {
     return "${date.hour}:${date.minute}";
   }
 
+  Widget weather5Days() {
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: list5DaysWeather
+            .map((weatherInfo) => WeatherInformations(
+                  degrees: weatherInfo.main.temp,
+                  hours: getDay(weatherInfo.date.weekday),
+                  pathImage:
+                      "assets/weather_icon/${weatherInfo.weather[0].icon.substring(0, 2)}.png",
+                ))
+            .toList());
+  }
+
   Drawer drawer() {
     return Drawer(
         child: Container(
@@ -234,7 +236,11 @@ class _HomePageState extends State<HomePage> {
             child: Column(children: [
               TextField(
                 controller: fieldText,
-                onSubmitted: (userValue) => addFavoriteCity(userValue),
+                onSubmitted: (userValue) {
+                  if (userValue != "" && userValue != " ") {
+                    addFavoriteCity(userValue);
+                  }
+                },
                 decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: IconButton(
@@ -244,14 +250,49 @@ class _HomePageState extends State<HomePage> {
                     hintText: 'Ajouter une ville',
                     border: InputBorder.none),
               ),
-              cities != null
-                  ? Container(
-                      height: 650,
+              cities != []
+                  ? SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.8,
                       child: ListView.builder(
                           itemCount: cities.length,
                           itemBuilder: ((context, index) {
                             var city = cities[index];
-                            return ListTile(title: Text(city.name));
+                            return Dismissible(
+                              key: ValueKey<City>(cities[index]),
+                              background: Container(
+                                color: Colors.red,
+                                child: const Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              onDismissed: (DismissDirection direction) {
+                                setState(() {
+                                  if (direction ==
+                                      DismissDirection.startToEnd) {
+                                    deleteCity(city);
+                                    cities.removeAt(index);
+                                  } else if (direction ==
+                                      DismissDirection.endToStart) {
+                                    deleteCity(city);
+                                    cities.removeAt(index);
+                                  }
+                                });
+                              },
+                              child: ListTile(
+                                title: Text(city.name),
+                                onTap: () async {
+                                  setState(() {
+                                    widget.myAppSettings.city
+                                        .setValue(city.name);
+                                    Navigator.pop(context, true);
+                                  });
+                                },
+                              ),
+                            );
                           })),
                     )
                   : const Text("LOADER")
@@ -266,5 +307,9 @@ class _HomePageState extends State<HomePage> {
       });
     });
     fieldText.clear();
+  }
+
+  void deleteCity(City city) {
+    database.delete(city);
   }
 }

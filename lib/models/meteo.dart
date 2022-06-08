@@ -5,7 +5,7 @@ class Meteo {
   Main main;
   Sys? sys;
   Wind? wind;
-  DateTime? date;
+  DateTime date;
 
   Meteo(this.id, this.name, this.weather, this.main, this.sys, this.wind,
       this.date);
@@ -27,10 +27,10 @@ class Main {
 }
 
 class Sys {
-  int type, id, sunrise, sunset;
+  int sunrise, sunset;
   String country;
 
-  Sys(this.type, this.id, this.country, this.sunrise, this.sunset);
+  Sys(this.country, this.sunrise, this.sunset);
 }
 
 class Wind {
