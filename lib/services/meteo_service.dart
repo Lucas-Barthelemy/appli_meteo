@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:appli_meteo/models/meteo.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 Future<Meteo> getCityWeather(String name) async {
-  Meteo meteo =
-      Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), null, Wind(0.0), DateTime(2022));
+  Meteo meteo = Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), Wind(0.0),
+      DateTime(2022), DateTime(2022), DateTime(2022));
 
   // https://api.openweathermap.org/data/2.5/weather?q={ville}&appid={API key}
 
@@ -13,7 +14,7 @@ Future<Meteo> getCityWeather(String name) async {
     "q": name,
     "units": "metric",
     "lang": "fr",
-    "appid": "841df294d282a84958d22be38fc1800f"
+    "appid": dotenv.env["API_KEY"],
   });
   var response = await http.get(uri);
   if (response.statusCode == 200) {
@@ -21,11 +22,14 @@ Future<Meteo> getCityWeather(String name) async {
     List<Weather> listWeather = convertToWeather(jsonResponse["weather"]);
     Main main = convertToMain(jsonResponse["main"]);
     Wind wind = convertToWind(jsonResponse["wind"]);
-    Sys sys = convertToSys(jsonResponse["sys"]);
     DateTime date =
         convertToLocalHour(jsonResponse["dt"], jsonResponse["timezone"]);
+    DateTime sunrise = convertToLocalHour(
+        jsonResponse["sys"]["sunrise"], jsonResponse["timezone"]);
+    DateTime sunset = convertToLocalHour(
+        jsonResponse["sys"]["sunset"], jsonResponse["timezone"]);
     meteo = Meteo(jsonResponse["id"], jsonResponse["name"], listWeather, main,
-        sys, wind, date);
+        wind, date, sunrise, sunset);
   } else {
     // ignore: avoid_print
     print("Request failed with status: ${response.statusCode}");
@@ -42,9 +46,8 @@ Future<List<Meteo>> getCity5DaysWeather(String name) async {
     "q": name,
     "units": "metric",
     "lang": "fr",
-    "appid": "841df294d282a84958d22be38fc1800f"
+    "appid": dotenv.env["API_KEY"],
   });
-  print(uri);
   var response = await http.get(uri);
   if (response.statusCode == 200) {
     var jsonResponse = jsonDecode(response.body);
@@ -52,8 +55,14 @@ Future<List<Meteo>> getCity5DaysWeather(String name) async {
       List<Weather> listWeather = convertToWeather(data["weather"]);
       Main main = convertToMain(data["main"]);
       Wind wind = convertToWind(data["wind"]);
-      DateTime date = convertToDateTime(data["dt_txt"]);
-      Meteo meteo = Meteo(null, null, listWeather, main, null, wind, date);
+      DateTime date =
+          convertToLocalHour(data["dt"], jsonResponse["city"]["timezone"]);
+      DateTime sunrise = convertToLocalHour(
+          jsonResponse["city"]["sunrise"], jsonResponse["city"]["timezone"]);
+      DateTime sunset = convertToLocalHour(
+          jsonResponse["city"]["sunset"], jsonResponse["city"]["timezone"]);
+      Meteo meteo =
+          Meteo(null, null, listWeather, main, wind, date, sunrise, sunset);
       list5DaysWeather.add(meteo);
     }
   } else {
@@ -93,8 +102,4 @@ DateTime convertToLocalHour(dynamic dt, dynamic timezone) {
 
 Wind convertToWind(dynamic dynamic) {
   return Wind(dynamic["speed"].toDouble());
-}
-
-Sys convertToSys(dynamic dynamic) {
-  return Sys(dynamic["country"], dynamic["sunrise"], dynamic["sunset"]);
 }

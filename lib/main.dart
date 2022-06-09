@@ -1,5 +1,6 @@
 import 'package:appli_meteo/views/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 class MyAppSettings {
@@ -11,6 +12,7 @@ class MyAppSettings {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   final preferences = await StreamingSharedPreferences.instance;
   final settings = MyAppSettings(preferences);
 

@@ -21,8 +21,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Meteo cityWeather =
-      Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), null, Wind(0.0), DateTime(2022));
+  Meteo cityWeather = Meteo(0, "", [], Main(0, 0, 0, 0, 0, 0), Wind(0.0),
+      DateTime(2022), DateTime(2022), DateTime(2022));
   List<Meteo> city5DaysWeather = [];
   List<Meteo> listHoursWeather = [];
   List<Meteo> list5DaysWeather = [];
@@ -52,11 +52,21 @@ class _HomePageState extends State<HomePage> {
       }
       idx++;
     }
+    late Meteo temp;
     for (Meteo weather in city5DaysWeather) {
-      if (weather.date.hour == 12) {
+      if ((weather.date.hour == 12 ||
+              weather.date.hour == 13 ||
+              weather.date.hour == 14) &&
+          weather.date.day != cityWeather.date.day) {
         list5DaysWeather.add(weather);
       }
+      temp = weather;
     }
+
+    if (list5DaysWeather.length < 5) {
+      list5DaysWeather.add(temp);
+    }
+
     database.fetchCities().then((value) {
       setState(() {
         cities = value;
@@ -78,7 +88,7 @@ class _HomePageState extends State<HomePage> {
         ),
         body: PreferenceBuilder<String>(
             preference: widget.myAppSettings.city,
-            builder: (BuildContext context, String city) {
+            builder: (context, city) {
               return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -86,6 +96,15 @@ class _HomePageState extends State<HomePage> {
                   children: [header(), descriptionMeteo()]);
             }),
         drawer: drawer(),
+        onDrawerChanged: (value) {
+          if (!value) {
+            setState(() {
+              list5DaysWeather = [];
+              listHoursWeather = [];
+              initialization();
+            });
+          }
+        },
       );
     }
   }
@@ -141,7 +160,9 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               padding: const EdgeInsets.all(10),
               color: Colors.white,
-              child: Expanded(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 200,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -202,8 +223,8 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               DetailWeather(
-                  information: "Levé du soleil",
-                  value: convertToDate(cityWeather.sys!.sunrise)),
+                  information: "Lever du soleil",
+                  value: displayHours(cityWeather.sunrise)),
               DetailWeather(
                   information: "Vent",
                   value:
@@ -219,8 +240,8 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               DetailWeather(
-                  information: "Couché du soleil",
-                  value: convertToDate(cityWeather.sys!.sunset)),
+                  information: "Coucher du soleil",
+                  value: displayHours(cityWeather.sunset)),
               DetailWeather(
                   information: "Humidité",
                   value: "${cityWeather.main.humidity}%"),
@@ -234,9 +255,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  String convertToDate(int value) {
-    var date = DateTime.fromMillisecondsSinceEpoch(value * 1000);
-    return "${date.hour}:${date.minute}";
+  String displayHours(DateTime date) {
+    String hours = (date.hour < 9) ? "0${date.hour}" : "${date.hour}";
+    String minutes = (date.minute < 9) ? "0${date.minute}" : "${date.minute}";
+    return "$hours:$minutes";
   }
 
   Widget weatherHours() {
@@ -320,12 +342,9 @@ class _HomePageState extends State<HomePage> {
                               },
                               child: ListTile(
                                 title: Text(city.name),
-                                onTap: () async {
-                                  setState(() {
-                                    widget.myAppSettings.city
-                                        .setValue(city.name);
-                                    Navigator.pop(context, true);
-                                  });
+                                onTap: () {
+                                  widget.myAppSettings.city.setValue(city.name);
+                                  Navigator.pop(context);
                                 },
                               ),
                             );
