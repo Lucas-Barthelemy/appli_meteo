@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
     return ClipRRect(
       borderRadius: const BorderRadius.only(bottomRight: Radius.circular(50)),
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.45,
         width: MediaQuery.of(context).size.width,
         color: getColor(cityWeather.weather[0].icon),
         child: Column(
@@ -120,12 +120,10 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(width: 20), // give it width
                 Text("${cityWeather.main.tempMax.toStringAsFixed(0)}°",
                     style: const TextStyle(color: Colors.white))
-              ]),
-              const SizedBox(height: 30), // give it width
+              ]), // give it width
               Image.asset(
                   "assets/weather_icon/${cityWeather.weather[0].icon.substring(0, 2)}.png",
-                  height: MediaQuery.of(context).size.height * 0.25),
-              const SizedBox(width: 30), // give it width
+                  height: MediaQuery.of(context).size.height * 0.20),
               Text(cityWeather.weather[0].description.capitalize(),
                   style: const TextStyle(color: Colors.white, fontSize: 20))
             ]),
@@ -136,39 +134,64 @@ class _HomePageState extends State<HomePage> {
   Container descriptionMeteo() {
     return Container(
         color: getColor(cityWeather.weather[0].icon),
-        height: MediaQuery.of(context).size.height * 0.38,
+        height: MediaQuery.of(context).size.height * 0.40,
         width: MediaQuery.of(context).size.width,
         child: ClipRRect(
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(50)),
-          child: Container(
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(50)),
+            child: Container(
               padding: const EdgeInsets.all(10),
               color: Colors.white,
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    listHoursWeather.isNotEmpty
-                        ? Expanded(
-                            child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: ((context, index) {
-                                  var meteo = listHoursWeather[index];
-                                  return WeatherInformations(
-                                      degrees: meteo.main.temp,
-                                      hours: "${meteo.date.hour.toString()}h",
-                                      pathImage:
-                                          "assets/weather_icon/${listHoursWeather[index].weather[0].icon.substring(0, 2)}.png");
-                                }),
-                                itemCount: listHoursWeather.length),
-                          )
-                        : const Text(""),
-                    const SizedBox(height: 10),
+              child: Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: weatherHours(),
+                    ),
                     rowInformations(),
-                    const SizedBox(height: 7),
                     weather5Days(),
-                  ])),
-        ));
+                  ],
+                ),
+              ),
+            )));
   }
+
+  // Container descriptionMeteo() {
+  //   return Container(
+  //       color: getColor(cityWeather.weather[0].icon),
+  //       height: MediaQuery.of(context).size.height * 0.40,
+  //       width: MediaQuery.of(context).size.width,
+  //       child: ClipRRect(
+  //         borderRadius: const BorderRadius.only(topLeft: Radius.circular(50)),
+  //         child: Container(
+  //             padding: const EdgeInsets.all(10),
+  //             color: Colors.white,
+  //             child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 mainAxisAlignment: MainAxisAlignment.start,
+  //                 children: [
+  //                   listHoursWeather.isNotEmpty
+  //                       ? Expanded(
+  //                           flex: 2,
+  //                           child: ListView.builder(
+  //                               scrollDirection: Axis.horizontal,
+  //                               itemBuilder: ((context, index) {
+  //                                 var meteo = listHoursWeather[index];
+  //                                 return WeatherInformations(
+  //                                     degrees: meteo.main.temp,
+  //                                     hours: "${meteo.date.hour.toString()}h",
+  //                                     pathImage:
+  //                                         "assets/weather_icon/${listHoursWeather[index].weather[0].icon.substring(0, 2)}.png");
+  //                               }),
+  //                               itemCount: listHoursWeather.length),
+  //                         )
+  //                       : const Text(""),
+  //                   rowInformations(),
+  //                   weather5Days(),
+  //                 ])),
+  //       ));
+  // }
 
   Row rowInformations() {
     return Row(
@@ -214,6 +237,19 @@ class _HomePageState extends State<HomePage> {
   String convertToDate(int value) {
     var date = DateTime.fromMillisecondsSinceEpoch(value * 1000);
     return "${date.hour}:${date.minute}";
+  }
+
+  Widget weatherHours() {
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: listHoursWeather
+            .map((weatherInfo) => WeatherInformations(
+                  degrees: weatherInfo.main.feelsLike,
+                  hours: "${weatherInfo.date.hour.toString()}h",
+                  pathImage:
+                      "assets/weather_icon/${weatherInfo.weather[0].icon.substring(0, 2)}.png",
+                ))
+            .toList());
   }
 
   Widget weather5Days() {
