@@ -3,12 +3,13 @@ class Meteo {
   String? name;
   List<Weather> weather;
   Main main;
-  Sys? sys;
   Wind? wind;
-  DateTime? date;
+  DateTime date;
+  DateTime sunrise;
+  DateTime sunset;
 
-  Meteo(this.id, this.name, this.weather, this.main, this.sys, this.wind,
-      this.date);
+  Meteo(this.id, this.name, this.weather, this.main, this.wind, this.date,
+      this.sunrise, this.sunset);
 }
 
 class Weather {
@@ -24,13 +25,6 @@ class Main {
 
   Main(this.temp, this.pressure, this.humidity, this.tempMin, this.tempMax,
       this.feelsLike);
-}
-
-class Sys {
-  int type, id, sunrise, sunset;
-  String country;
-
-  Sys(this.type, this.id, this.country, this.sunrise, this.sunset);
 }
 
 class Wind {

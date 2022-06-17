@@ -9,11 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:appli_meteo/main.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(
+        myAppSettings:
+            MyAppSettings(await StreamingSharedPreferences.instance)));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
