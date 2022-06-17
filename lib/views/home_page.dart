@@ -79,7 +79,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (charged == false) {
-      return const Center(child: Text("CECI EST UN LOADER INCROYABLE"));
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(
