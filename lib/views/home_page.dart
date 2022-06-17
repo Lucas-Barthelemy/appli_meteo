@@ -2,9 +2,9 @@ import 'package:appli_meteo/components/detail_weather.dart';
 import 'package:appli_meteo/components/weather_information.dart';
 import 'package:appli_meteo/extensions/string.dart';
 import 'package:appli_meteo/main.dart';
-import 'package:appli_meteo/services/color.dart';
-import 'package:appli_meteo/services/day.dart';
 import 'package:appli_meteo/services/meteo_service.dart';
+import 'package:appli_meteo/utils/color.dart';
+import 'package:appli_meteo/utils/day.dart';
 import 'package:flutter/material.dart';
 
 import 'package:appli_meteo/models/city.dart';
@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> {
   var fieldText = TextEditingController();
   dynamic cities = [];
   bool charged = false;
+  bool changed = false;
 
   @override
   void initState() {
@@ -78,11 +79,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (charged == false) {
-      return Container();
+      return const Center(child: Text("CECI EST UN LOADER INCROYABLE"));
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: const Text("Météo"),
+          title: Text((isNight(cityWeather) ? "Nuit" : "Jour")),
           backgroundColor: getColor(cityWeather.weather[0].icon),
           elevation: 0,
         ),
@@ -99,9 +100,15 @@ class _HomePageState extends State<HomePage> {
         onDrawerChanged: (value) {
           if (!value) {
             setState(() {
-              list5DaysWeather = [];
-              listHoursWeather = [];
-              initialization();
+              if (changed) {
+                charged = false;
+                changed = false;
+                list5DaysWeather = [];
+                listHoursWeather = [];
+                initialization().then((data) {
+                  charged = true;
+                });
+              }
             });
           }
         },
@@ -122,12 +129,16 @@ class _HomePageState extends State<HomePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 20),
-              Text(cityWeather.name!,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 50,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 5)),
+              Center(
+                child: Text(cityWeather.name!,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 5,
+                        textBaseline: TextBaseline.alphabetic,
+                        overflow: TextOverflow.clip)),
+              ),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Text(
                   "${cityWeather.main.tempMin.toStringAsFixed(0)}°",
@@ -141,8 +152,9 @@ class _HomePageState extends State<HomePage> {
                     style: const TextStyle(color: Colors.white))
               ]), // give it width
               Image.asset(
-                  "assets/weather_icon/${cityWeather.weather[0].icon.substring(0, 2)}.png",
-                  height: MediaQuery.of(context).size.height * 0.20),
+                  "assets/weather_icons/${cityWeather.weather[0].icon}.png",
+                  height: MediaQuery.of(context).size.height * 0.20,
+                  width: MediaQuery.of(context).size.height * 0.20),
               Text(cityWeather.weather[0].description.capitalize(),
                   style: const TextStyle(color: Colors.white, fontSize: 20))
             ]),
@@ -269,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                   degrees: weatherInfo.main.feelsLike,
                   hours: "${weatherInfo.date.hour.toString()}h",
                   pathImage:
-                      "assets/weather_icon/${weatherInfo.weather[0].icon.substring(0, 2)}.png",
+                      "assets/weather_icons/${weatherInfo.weather[0].icon}.png",
                 ))
             .toList());
   }
@@ -282,7 +294,7 @@ class _HomePageState extends State<HomePage> {
                   degrees: weatherInfo.main.temp,
                   hours: getDay(weatherInfo.date.weekday),
                   pathImage:
-                      "assets/weather_icon/${weatherInfo.weather[0].icon.substring(0, 2)}.png",
+                      "assets/weather_icons/${weatherInfo.weather[0].icon}.png",
                 ))
             .toList());
   }
@@ -343,6 +355,7 @@ class _HomePageState extends State<HomePage> {
                               child: ListTile(
                                 title: Text(city.name),
                                 onTap: () {
+                                  changed = true;
                                   widget.myAppSettings.city.setValue(city.name);
                                   Navigator.pop(context);
                                 },

@@ -64,15 +64,27 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-      - assets/weather_icon/01.png
-      - assets/weather_icon/02.png
-      - assets/weather_icon/03.png
-      - assets/weather_icon/04.png
-      - assets/weather_icon/09.png
-      - assets/weather_icon/10.png
-      - assets/weather_icon/11.png
-      - assets/weather_icon/13.png
-      - assets/weather_icon/50.png
+    # day icons
+      - assets/weather_icons/01d.png
+      - assets/weather_icons/02d.png
+      - assets/weather_icons/03d.png
+      - assets/weather_icons/04d.png
+      - assets/weather_icons/09d.png
+      - assets/weather_icons/10d.png
+      - assets/weather_icons/11d.png
+      - assets/weather_icons/13d.png
+      - assets/weather_icons/50d.png
+    # night icons
+      - assets/weather_icons/01n.png
+      - assets/weather_icons/02n.png
+      - assets/weather_icons/03n.png
+      - assets/weather_icons/04n.png
+      - assets/weather_icons/09n.png
+      - assets/weather_icons/10n.png
+      - assets/weather_icons/11n.png
+      - assets/weather_icons/13n.png
+      - assets/weather_icons/50n.png
+    # others
       - .env
   #   - images/a_dot_ham.jpeg
 
